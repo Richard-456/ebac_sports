@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react'
 import Header from './components/Header'
 import Produtos from './containers/Produtos'
-
 import { GlobalStyle } from './styles'
+import { useGetProdutosQuery } from './store/api'
 
 export type Produto = {
   id: number
@@ -12,44 +11,17 @@ export type Produto = {
 }
 
 function App() {
-  const [produtos, setProdutos] = useState<Produto[]>([])
-  const [carrinho, setCarrinho] = useState<Produto[]>([])
-  const [favoritos, setFavoritos] = useState<Produto[]>([])
+  // RTK Query substitui o useEffect + fetch + useState de produtos
+  const { data: produtos = [], isLoading } = useGetProdutosQuery()
 
-  useEffect(() => {
-    fetch('https://api-ebac.vercel.app/api/ebac_sports')
-      .then((res) => res.json())
-      .then((res) => setProdutos(res))
-  }, [])
-
-  function adicionarAoCarrinho(produto: Produto) {
-    if (carrinho.find((p) => p.id === produto.id)) {
-      alert('Item já adicionado')
-    } else {
-      setCarrinho([...carrinho, produto])
-    }
-  }
-
-  function favoritar(produto: Produto) {
-    if (favoritos.find((p) => p.id === produto.id)) {
-      const favoritosSemProduto = favoritos.filter((p) => p.id !== produto.id)
-      setFavoritos(favoritosSemProduto)
-    } else {
-      setFavoritos([...favoritos, produto])
-    }
-  }
+  if (isLoading) return <p>Carregando...</p>
 
   return (
     <>
       <GlobalStyle />
       <div className="container">
-        <Header favoritos={favoritos} itensNoCarrinho={carrinho} />
-        <Produtos
-          produtos={produtos}
-          favoritos={favoritos}
-          favoritar={favoritar}
-          adicionarAoCarrinho={adicionarAoCarrinho}
-        />
+        <Header />
+        <Produtos produtos={produtos} />
       </div>
     </>
   )
